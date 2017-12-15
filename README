@@ -1,0 +1,68 @@
+================
+
+Cryptos is a work-in-progress repository for software to manipulate 
+crypto trading. 
+
+Currently, the only supported platform is KRAKEN.
+
+Usage
+------
+
+./kraklib.py --help
+usage: kraklib.py [-h] [-d DBFILE] [-s] [-c CANCEL] [-o] [-p]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d DBFILE, --dbfile DBFILE
+                        DataBase file
+  -s, --stats           Show stats
+  -c CANCEL, --cancel CANCEL
+                        Cancel Order <txid>
+  -o, --open            Open Orders
+  -p, --place           Place Order
+
+
+Getting Started
+---------------
+
+To run kraklib.py you need to setup a virtual env and install the required packages.
+
+# git clone https://bitbucket.org/ananos/cryptos
+# virtualenv -p /usr/bin/python3 ./cryptos
+# cd ./cryptos
+
+#### step in the virtual environment
+# . ./bin/activate
+
+#### Install krakenex
+# ./bin/pip install krakenex
+
+That's it!
+
+You can now check Altcoin statistics:
+
+(krakenlib) # ./kraklib.py -s
+COIN    LAST    AVG (DAY)   TOTAL EURO SPENT (DAY)
+XXMRZEUR    259.97000000    254.4   ε1m 
+XETCZEUR    25.10300000 25.049500000000002  ε1m 
+XREPZEUR    30.92900    29.4745 ε444k 
+BCHEUR  1452.000000 1460.55 ε7m 
+XLTCZEUR    248.01000   231.59499999999997  ε11m 
+XETHZEUR    565.74000   536.79  ε20m 
+XZECZEUR    388.50900   378.0   ε1m 
+XXRPZEUR    0.63200000  0.6334500000000001  ε16m 
+XXBTZEUR    14820.00000 14246.0 ε59m 
+DASHEUR 741.020000  722.8025    ε1m 
+
+Or check open orders:
+
+(krakenlib) # ./kraklib.py -o
+{'result': {'open': {'OTWNXU-77ND5-MPMMKV': {'starttm': 0, 'expiretm': 0, 'oflags': 'fciq', 'userref': None, 'refid': None, 'status': 'open', 'vol_exec': '0.00000000', 'descr': {'pair': 'XRPEUR', 'order': 'sell 30.00000000 XRPEUR @ limit 1.50000', 'leverage': 'none', 'price2': '0', 'ordertype': 'limit', 'price': '1.50000', 'type': 'sell'}, 'misc': '', 'vol': '30.00000000', 'opentm': 1513364301.9127, 'cost': '0.00000000', 'price': '0.00000000', 'fee': '0.00000000'}, 'O6X7SW-CN7NY-34XCOY': {'starttm': 0, 'expiretm': 0, 'oflags': 'fciq', 'userref': None, 'refid': None, 'status': 'open', 'vol_exec': '0.00000000', 'descr': {'pair': 'XRPEUR', 'order': 'sell 30.00000000 XRPEUR @ limit 1.50000', 'leverage': 'none', 'price2': '0', 'ordertype': 'limit', 'price': '1.50000', 'type': 'sell'}, 'misc': '', 'vol': '30.00000000', 'opentm': 1513364250.4333, 'cost': '0.00000000', 'price': '0.00000000', 'fee': '0.00000000'}, 'O7YDRJ-PORB2-LLCQDO': {'starttm': 0, 'expiretm': 0, 'oflags': 'fciq', 'userref': None, 'refid': None, 'status': 'open', 'vol_exec': '0.00000000', 'descr': {'pair': 'XRPEUR', 'order': 'sell 30.00000000 XRPEUR @ limit 1.50000', 'leverage': 'none', 'price2': '0', 'ordertype': 'limit', 'price': '1.50000', 'type': 'sell'}, 'misc': '', 'vol': '30.00000000', 'opentm': 1513364306.5907, 'cost': '0.00000000', 'price': '0.00000000', 'fee': '0.00000000'}}}, 'error': []}
+
+
+You can Cancel open orders:
+
+(krakenlib) # ./kraklib.py -c O7YDRJ-PORB2-LLCQDO
+Will Cancel order O7YDRJ-PORB2-LLCQDO 
+
+
