@@ -37,6 +37,10 @@ To run kraklib.py you need to setup a virtual env and install the required packa
 #### Install krakenex
 # ./bin/pip install krakenex
 
+#### Add kraken.key
+# echo "key" > kraken.key
+# echo "secretkey" >> kraken.key
+
 That's it!
 
 You can now check Altcoin statistics:
