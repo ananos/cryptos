@@ -61,7 +61,25 @@ DASHEUR 741.020000  722.8025    ε1m
 Or check open orders:
 
 (krakenlib) # ./kraklib.py -o
-{'result': {'open': {'OTWNXU-77ND5-MPMMKV': {'starttm': 0, 'expiretm': 0, 'oflags': 'fciq', 'userref': None, 'refid': None, 'status': 'open', 'vol_exec': '0.00000000', 'descr': {'pair': 'XRPEUR', 'order': 'sell 30.00000000 XRPEUR @ limit 1.50000', 'leverage': 'none', 'price2': '0', 'ordertype': 'limit', 'price': '1.50000', 'type': 'sell'}, 'misc': '', 'vol': '30.00000000', 'opentm': 1513364301.9127, 'cost': '0.00000000', 'price': '0.00000000', 'fee': '0.00000000'}, 'O6X7SW-CN7NY-34XCOY': {'starttm': 0, 'expiretm': 0, 'oflags': 'fciq', 'userref': None, 'refid': None, 'status': 'open', 'vol_exec': '0.00000000', 'descr': {'pair': 'XRPEUR', 'order': 'sell 30.00000000 XRPEUR @ limit 1.50000', 'leverage': 'none', 'price2': '0', 'ordertype': 'limit', 'price': '1.50000', 'type': 'sell'}, 'misc': '', 'vol': '30.00000000', 'opentm': 1513364250.4333, 'cost': '0.00000000', 'price': '0.00000000', 'fee': '0.00000000'}, 'O7YDRJ-PORB2-LLCQDO': {'starttm': 0, 'expiretm': 0, 'oflags': 'fciq', 'userref': None, 'refid': None, 'status': 'open', 'vol_exec': '0.00000000', 'descr': {'pair': 'XRPEUR', 'order': 'sell 30.00000000 XRPEUR @ limit 1.50000', 'leverage': 'none', 'price2': '0', 'ordertype': 'limit', 'price': '1.50000', 'type': 'sell'}, 'misc': '', 'vol': '30.00000000', 'opentm': 1513364306.5907, 'cost': '0.00000000', 'price': '0.00000000', 'fee': '0.00000000'}}}, 'error': []}
+{'result': {'open': {'OTWNXU-77ND5-MPMMKV': {'starttm': 0, 'expiretm': 0,
+'oflags': 'fciq', 'userref': None, 'refid': None, 'status': 'open', 'vol_exec':
+'0.00000000', 'descr': {'pair': 'XRPEUR', 'order': 'sell 30.00000000 XRPEUR @
+limit 1.50000', 'leverage': 'none', 'price2': '0', 'ordertype': 'limit',
+'price': '1.50000', 'type': 'sell'}, 'misc': '', 'vol': '30.00000000',
+'opentm': 1513364301.9127, 'cost': '0.00000000', 'price': '0.00000000', 'fee':
+'0.00000000'}, 'O6X7SW-CN7NY-34XCOY': {'starttm': 0, 'expiretm': 0, 'oflags':
+'fciq', 'userref': None, 'refid': None, 'status': 'open', 'vol_exec':
+'0.00000000', 'descr': {'pair': 'XRPEUR', 'order': 'sell 30.00000000 XRPEUR @
+limit 1.50000', 'leverage': 'none', 'price2': '0', 'ordertype': 'limit',
+'price': '1.50000', 'type': 'sell'}, 'misc': '', 'vol': '30.00000000',
+'opentm': 1513364250.4333, 'cost': '0.00000000', 'price': '0.00000000', 'fee':
+'0.00000000'}, 'O7YDRJ-PORB2-LLCQDO': {'starttm': 0, 'expiretm': 0, 'oflags':
+'fciq', 'userref': None, 'refid': None, 'status': 'open', 'vol_exec':
+'0.00000000', 'descr': {'pair': 'XRPEUR', 'order': 'sell 30.00000000 XRPEUR @
+limit 1.50000', 'leverage': 'none', 'price2': '0', 'ordertype': 'limit',
+'price': '1.50000', 'type': 'sell'}, 'misc': '', 'vol': '30.00000000',
+'opentm': 1513364306.5907, 'cost': '0.00000000', 'price': '0.00000000', 'fee':
+'0.00000000'}}}, 'error': []}
 
 
 You can Cancel open orders:
