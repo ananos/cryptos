@@ -4,6 +4,7 @@
 import krakenex
 import time
 import sys, getopt
+from prettytable import *
 
 import json
 import argparse
@@ -54,8 +55,10 @@ def ticker(query):
     return result
 
 def analysis(tick):
-    print("COIN\tLAST\tAVG (DAY)\tTOTAL EURO SPENT (DAY)")
+    #print("COIN\tLAST\tAVG (DAY)\tTOTAL EURO SPENT (DAY)")
+    mydict = list()
     for coin in tick:
+        row = {}
         coindata = tick[coin]
         last = coindata['c']
         volume = coindata['v']
@@ -70,8 +73,14 @@ def analysis(tick):
         else:
             toteuro = int(toteuro / 1000)
             sign = 'k'
-        print("{0}\t{1}\t{2}\tε{3}{4} ".format(coin, last[0], avg, int(toteuro), sign))
-
+        row['last'] = last[0]
+        row['avg'] = avg
+        row['toteuro'] = str(int(toteuro)) + sign
+        row['coin'] = coin
+        mydict.append(row)
+        #print("{0}\t{1}\t{2}\tε{3}{4} ".format(coin, last[0], avg, int(toteuro), sign))
+        #print_dict(row)
+    printTable(mydict, ['coin', 'last', 'avg', 'toteuro'])
 
 def run_func(func, arg):
     retries = 0
@@ -92,6 +101,32 @@ def run_func(func, arg):
         time.sleep(sleepinterval)
     return result
 
+def printTable(myDict, colList=None):
+        """ Pretty print a list of dictionaries (myDict) as a dynamically sized table.
+        If column names (colList) aren't specified, they will show in random order.
+        Author: Thierry Husson - Use it as you want but don't blame me.
+        """
+        if not colList: colList = list(myDict[0].keys() if myDict else [])
+        myList = [colList] # 1st row = header
+        for item in myDict: myList.append([str(item[col] or '') for col in colList])
+        colSize = [max(map(len,col)) for col in zip(*myList)]
+        formatStr = ' | '.join(["{{:<{}}}".format(i) for i in colSize])
+        myList.insert(1, ['-' * i for i in colSize]) # Seperating line
+        for item in myList: print(formatStr.format(*item))
+
+
+def print_dict(dicttoprint):
+        t = PrettyTable(['key', 'value'])
+        for key, val in dicttoprint.items():
+            #if (isinstance(val, dict)):
+            #    vallist = list()
+            #    for key1,val1 in val.items():
+            #       vallist.append([key1,val1]) 
+            #    t.add_row([key, vallist])
+            #else:
+                t.add_row([key, val])
+        print(t)
+
 
 def main(argv):
     parser = argparse.ArgumentParser()
@@ -99,7 +134,8 @@ def main(argv):
     parser.add_argument('-s','--stats', help='Show stats',required=False,action='store_true')
     parser.add_argument('-c','--cancel', help='Cancel Order <txid>',required=False)
     parser.add_argument('-o','--open', help='Open Orders ',required=False, action='store_true')
-    parser.add_argument('-p','--place', help='Place Order ',required=False, action='store_true')
+    parser.add_argument('-p','--place', help="Place Order ex: -p { 'pair': 'XXRPZEUR', 'type': 'sell', 'ordertype': 'limit', 'price': '1.5', 'volume': '30' } ",required=False)
+    parser.add_argument('-b','--balance', help='Place Order ',required=False, action='store_true')
     args = parser.parse_args()
     if not args.dbfile:
         args.dbfile = "dbfile.json"
@@ -115,14 +151,19 @@ def main(argv):
     elif args.cancel:
         query = { 'txid': args.cancel }
         res = run_func(cancel_order, query)
+        print_dict(res['result'])
     elif args.open:
         query = { }
         res = run_func(open_orders, query)
-        print(res)
+        print_dict(res['result']['open'])
     elif args.place:
-        query = { }
+        query = eval(args.place)
         res = run_func(place_order, query)
-        print(res)
+        print_dict(res['result'])
+    elif args.balance:
+        query = {}
+        res = run_func(get_balance, query)
+        print_dict(res['result'])
     
     
     #odict = json.dumps(tick)

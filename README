@@ -8,8 +8,8 @@ Currently, the only supported platform is KRAKEN.
 Usage
 ------
 
-./kraklib.py --help
-usage: kraklib.py [-h] [-d DBFILE] [-s] [-c CANCEL] [-o] [-p]
+(krakenlib) # ./kraklib.py -h
+usage: kraklib.py [-h] [-d DBFILE] [-s] [-c CANCEL] [-o] [-p PLACE] [-b]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -19,7 +19,11 @@ optional arguments:
   -c CANCEL, --cancel CANCEL
                         Cancel Order <txid>
   -o, --open            Open Orders
-  -p, --place           Place Order
+  -p PLACE, --place PLACE
+                        Place Order ex: -p { 'pair': 'XXRPZEUR', 'type':
+                        'sell', 'ordertype': 'limit', 'price': '1.5',
+                        'volume': '30' }
+  -b, --balance         Place Order
 
 
 Getting Started
@@ -43,22 +47,25 @@ To run kraklib.py you need to setup a virtual env and install the required packa
 
 That's it!
 
-You can now check Altcoin statistics:
+You can now:
 
-(krakenlib) # ./kraklib.py -s
-COIN    LAST    AVG (DAY)   TOTAL EURO SPENT (DAY)
-XXMRZEUR    259.97000000    254.4   ε1m 
-XETCZEUR    25.10300000 25.049500000000002  ε1m 
-XREPZEUR    30.92900    29.4745 ε444k 
-BCHEUR  1452.000000 1460.55 ε7m 
-XLTCZEUR    248.01000   231.59499999999997  ε11m 
-XETHZEUR    565.74000   536.79  ε20m 
-XZECZEUR    388.50900   378.0   ε1m 
-XXRPZEUR    0.63200000  0.6334500000000001  ε16m 
-XXBTZEUR    14820.00000 14246.0 ε59m 
-DASHEUR 741.020000  722.8025    ε1m 
+-  check Altcoin statistics:
 
-Or check open orders:
+(krakenlib) #./kraklib.py -s
+coin     | last         | avg                | toteuro
+-------- | ------------ | ------------------ | -------
+XXMRZEUR | 272.89000000 | 261.665            | 1m     
+XETHZEUR | 587.98000    | 565.985            | 9m     
+XREPZEUR | 34.02000     | 31.19              | 509k   
+XZECZEUR | 399.10000    | 383.3815           | 865k   
+BCHEUR   | 1494.500000  | 1466.2             | 1m     
+XXRPZEUR | 0.66340000   | 0.6520349999999999 | 7m     
+XXBTZEUR | 15175.00000  | 14850.0            | 24m    
+XLTCZEUR | 256.29000    | 238.78499999999997 | 3m     
+DASHEUR  | 758.993000   | 737.8495           | 672k   
+XETCZEUR | 30.21700000  | 27.8775            | 4m     
+
+- check open orders:
 
 (krakenlib) # ./kraklib.py -o
 {'result': {'open': {'OTWNXU-77ND5-MPMMKV': {'starttm': 0, 'expiretm': 0,
@@ -82,9 +89,23 @@ limit 1.50000', 'leverage': 'none', 'price2': '0', 'ordertype': 'limit',
 '0.00000000'}}}, 'error': []}
 
 
-You can Cancel open orders:
+- Cancel open orders:
 
-(krakenlib) # ./kraklib.py -c O7YDRJ-PORB2-LLCQDO
-Will Cancel order O7YDRJ-PORB2-LLCQDO 
+(krakenlib) # ./kraklib.py -c OYOCNX-QDXYL-QXV4QZ
+Will Cancel order OYOCNX-QDXYL-QXV4QZ 
++-------+-------+
+|  key  | value |
++-------+-------+
+| count |   1   |
++-------+-------+
 
+- Place orders:
+(krakenlib) # ./kraklib.py -p "{ 'pair': 'XXRPZEUR', 'type': 'sell', 'price': '1.5', 'volume': '30', 'ordertype':'limit' }
+Will place order {'type': 'sell', 'volume': '30', 'ordertype': 'limit', 'pair': 'XXRPZEUR', 'price': '1.5'} 
++-------+------------------------------------------------------+
+|  key  |                        value                         |
++-------+------------------------------------------------------+
+|  txid |               ['OYOCNX-QDXYL-QXV4QZ']                |
+| descr | {'order': 'sell 30.00000000 XRPEUR @ limit 1.50000'} |
++-------+------------------------------------------------------+
 
