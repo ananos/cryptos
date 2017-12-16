@@ -5,6 +5,7 @@ import krakenex
 import time
 import sys, getopt
 from prettytable import *
+from datetime import datetime,timedelta
 
 import json
 import argparse
@@ -136,6 +137,7 @@ def main(argv):
     parser.add_argument('-o','--open', help='Open Orders ',required=False, action='store_true')
     parser.add_argument('-p','--place', help="Place Order ex: -p { 'pair': 'XXRPZEUR', 'type': 'sell', 'ordertype': 'limit', 'price': '1.5', 'volume': '30' } ",required=False)
     parser.add_argument('-b','--balance', help='Place Order ',required=False, action='store_true')
+    parser.add_argument('-t','--history', help='Trade History ex: -t 2 (show last 2 days)',required=False)
     args = parser.parse_args()
     if not args.dbfile:
         args.dbfile = "dbfile.json"
@@ -164,6 +166,10 @@ def main(argv):
         query = {}
         res = run_func(get_balance, query)
         print_dict(res['result'])
+    elif args.history:
+        query = {'start':datetime.timestamp(datetime.now() - timedelta(days=int(args.history)))}
+        res = run_func(tradehistory, query)
+        print_dict(res['result']['trades'])
     
     
     #odict = json.dumps(tick)
