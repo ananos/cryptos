@@ -16,6 +16,16 @@ k.load_key('kraken.key')
 a = list()
 dbdict = {}
 
+
+def coin_to_pair(coin):
+    return coin + 'ZEUR'
+
+def pair_to_coin(pair):
+    if (pair.endswith("ZEUR")):
+        return pair.replace("ZEUR","")
+    else:
+        return pair.replace("EUR","")
+
 def place_order(query):
     if not query:
         query = { 'pair': 'XXRPZEUR',
@@ -38,6 +48,20 @@ def calculate_fees(trades):
             real_sum[pair] += float(trades[trade]['fee'])
         except:
             real_sum[pair] = float(trades[trade]['fee'])
+    return real_sum
+
+def calculate_price(trades):
+
+    real_sum = {}
+    for trade in trades:
+        pair = trades[trade]['pair']
+        calc = float(trades[trade]['price']) * float(trades[trade]['vol'])
+        if trades[trade]['type'] == 'buy':
+            calc = (-1) * calc
+        try:
+            real_sum[pair] += calc
+        except:
+            real_sum[pair] = calc
     return real_sum
 
 def aggregate(trades):
@@ -111,7 +135,49 @@ def analysis(tick):
         mydict.append(row)
         #print("{0}\t{1}\t{2}\tε{3}{4} ".format(coin, last[0], avg, int(toteuro), sign))
         #print_dict(row)
-    printTable(mydict, ['coin', 'last', 'avg', 'toteuro', 'low', 'high', 'pct'])
+    return (mydict, ['coin', 'last', 'avg', 'toteuro', 'low', 'high', 'pct'])
+
+def recommend():
+    query = {}
+    res = run_func(ticker, query)
+    #print("Last price")
+    tick = res['result']
+    (mydict, row) = analysis(tick)
+    res = run_func(get_balance, query)
+    balance = res['result']
+    mylist = list()
+    for item in mydict:
+        coin = pair_to_coin(item['coin'])
+        pct =item['pct']
+        for i in balance:
+            if i == coin and float(balance[i]) > 0.1:
+                mylist.append((i,pct))
+    mylist.sort(key=lambda tup: tup[1])
+
+    query = {'start':datetime.timestamp(datetime.now() - timedelta(days=int(10)))}
+    res = run_func(tradehistory, query)
+    trades = res['result']['trades']
+    fees = calculate_fees(trades)
+    spent = calculate_price(trades)
+    total = {}
+    for item in fees:
+        total[item] = spent[item] - fees[item]
+    potsell = {}
+    for item in mydict:
+        pair = item['coin']
+        coin = pair_to_coin(pair)
+        for x in balance:
+            if coin == x:
+                potsell[pair] = float(balance[x]) * float(item['last'])
+    (mycoin, pct) = mylist[-1]
+    print("Most changed", mylist)
+    diff = {}
+    for item in mydict:
+        pair = item['coin']
+        if (pair in potsell) and (pair in spent):
+            diff[pair] = int((potsell[pair] + spent[pair]) * 1000) / 1000
+    print_dict(diff)
+
 
 def run_func(func, arg):
     retries = 0
@@ -170,6 +236,7 @@ def main(argv):
     parser.add_argument('-t','--history', help='Trade History ex: -t 2 (show last 2 days)',required=False)
     parser.add_argument('-f','--fees', help='show total fees paid)',required=False, action='store_true')
     parser.add_argument('-a','--aggregate', help='show aggregate stats per coin)',required=False, action='store_true')
+    parser.add_argument('-r','--rec', help='show recommendation',required=False, action='store_true')
     args = parser.parse_args()
     if not args.dbfile:
         args.dbfile = "dbfile.json"
@@ -181,7 +248,8 @@ def main(argv):
         res = run_func(ticker, query)
         #print("Last price")
         tick = res['result']
-        analysis(tick)
+        (mydict, row) = analysis(tick)
+        printTable(mydict, row)
     elif args.cancel:
         query = { 'txid': args.cancel }
         res = run_func(cancel_order, query)
@@ -222,6 +290,8 @@ def main(argv):
                 row[c] = d
             myList.append(row)
         printTable(myList,['coin','buy','sell'])
+    elif args.rec:
+        recommend()
 
     
     

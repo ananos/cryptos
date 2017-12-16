@@ -109,3 +109,15 @@ Will place order {'type': 'sell', 'volume': '30', 'ordertype': 'limit', 'pair': 
 | descr | {'order': 'sell 30.00000000 XRPEUR @ limit 1.50000'} |
 +-------+------------------------------------------------------+
 
+- Recommend: 
+The tuple list represents which coins have changed most (percentage) and the table represents gains/losses if we were to sell (based on the trades of the last 10 days)
+
+(krakenlib) # ./kraklib.py -r
+Most changed [('XXRP', -2.882), ('BCH', -0.711), ('XETC', 0.234)]
++----------+---------+
+|   key    |  value  |
++----------+---------+
+| XXRPZEUR | 674.902 |
+| XETCZEUR | -38.159 |
++----------+---------+
+
