@@ -207,7 +207,18 @@ def main(argv):
         query = {}
         res = run_func(tradehistory, query)
         trades = res['result']['trades']
-        print_dict(aggregate(trades))
+        myList = list()
+        real_sum =aggregate(trades)
+        for a,b in real_sum.items():
+            row = {}
+            row['coin'] = a
+            row['buy'] = 0
+            row['sell'] = 0
+            for c,d in b.items():
+                row[c] = d
+            myList.append(row)
+        printTable(myList,['coin','buy','sell'])
+
     
     
     #odict = json.dumps(tick)
