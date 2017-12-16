@@ -104,10 +104,14 @@ def analysis(tick):
         row['avg'] = avg
         row['toteuro'] = str(int(toteuro)) + sign
         row['coin'] = coin
+        row['low'] = float(low[1])
+        row['high'] = float(high[1])
+        temp = (float(high[1]) - float(low[1])) / float(last[0]) * 100
+        row['pct'] = int(temp * 1000) / 1000
         mydict.append(row)
         #print("{0}\t{1}\t{2}\tε{3}{4} ".format(coin, last[0], avg, int(toteuro), sign))
         #print_dict(row)
-    printTable(mydict, ['coin', 'last', 'avg', 'toteuro'])
+    printTable(mydict, ['coin', 'last', 'avg', 'toteuro', 'low', 'high', 'pct'])
 
 def run_func(func, arg):
     retries = 0
