@@ -29,6 +29,32 @@ def place_order(query):
     return result
 
 
+def calculate_fees(trades):
+
+    real_sum = {}
+    for trade in trades:
+        pair = trades[trade]['pair']
+        try:
+            real_sum[pair] += float(trades[trade]['fee'])
+        except:
+            real_sum[pair] = float(trades[trade]['fee'])
+    return real_sum
+
+def aggregate(trades):
+    real_sum = {}
+    for trade in trades:
+        pair = trades[trade]['pair']
+        typeof = trades[trade]['type']
+        try:
+            real_sum[pair][typeof] += float(trades[trade]['vol'])
+        except:
+            try:
+                real_sum[pair][typeof] = float(trades[trade]['vol'])
+            except:
+                real_sum[pair] = {}
+                real_sum[pair][typeof] = float(trades[trade]['vol'])
+    return real_sum
+
 def get_balance(query):
     result = k.query_private('Balance', query)
     return result
@@ -138,6 +164,8 @@ def main(argv):
     parser.add_argument('-p','--place', help="Place Order ex: -p { 'pair': 'XXRPZEUR', 'type': 'sell', 'ordertype': 'limit', 'price': '1.5', 'volume': '30' } ",required=False)
     parser.add_argument('-b','--balance', help='Place Order ',required=False, action='store_true')
     parser.add_argument('-t','--history', help='Trade History ex: -t 2 (show last 2 days)',required=False)
+    parser.add_argument('-f','--fees', help='show total fees paid)',required=False, action='store_true')
+    parser.add_argument('-a','--aggregate', help='show aggregate stats per coin)',required=False, action='store_true')
     args = parser.parse_args()
     if not args.dbfile:
         args.dbfile = "dbfile.json"
@@ -170,6 +198,16 @@ def main(argv):
         query = {'start':datetime.timestamp(datetime.now() - timedelta(days=int(args.history)))}
         res = run_func(tradehistory, query)
         print_dict(res['result']['trades'])
+    elif args.fees:
+        query = {}
+        res = run_func(tradehistory, query)
+        trades = res['result']['trades']
+        print_dict(calculate_fees(trades))
+    elif args.aggregate:
+        query = {}
+        res = run_func(tradehistory, query)
+        trades = res['result']['trades']
+        print_dict(aggregate(trades))
     
     
     #odict = json.dumps(tick)
