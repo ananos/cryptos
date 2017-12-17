@@ -53,6 +53,7 @@ def calculate_fees(trades):
 def calculate_price(trades):
 
     real_sum = {}
+    real_vol = {}
     for trade in trades:
         pair = trades[trade]['pair']
         calc = float(trades[trade]['price']) * float(trades[trade]['vol'])
@@ -62,21 +63,42 @@ def calculate_price(trades):
             real_sum[pair] += calc
         except:
             real_sum[pair] = calc
-    return real_sum
+
+    for trade in trades:
+        pair = trades[trade]['pair']
+        calc = float(trades[trade]['vol'])
+        if trades[trade]['type'] == 'buy':
+            calc = (-1) * calc
+        try:
+            real_vol[pair] += calc
+        except:
+            real_vol[pair] = calc
+
+    return (real_vol, real_sum)
 
 def aggregate(trades):
     real_sum = {}
     for trade in trades:
         pair = trades[trade]['pair']
         typeof = trades[trade]['type']
+        price = float(trades[trade]['price'])
+        vol = float(trades[trade]['vol'])
+        calc = price * vol
+        if typeof == 'buy':
+            calc = (-1) * calc
         try:
-            real_sum[pair][typeof] += float(trades[trade]['vol'])
+            real_sum[pair][typeof] += vol
         except:
             try:
-                real_sum[pair][typeof] = float(trades[trade]['vol'])
+                real_sum[pair][typeof] = vol
             except:
                 real_sum[pair] = {}
-                real_sum[pair][typeof] = float(trades[trade]['vol'])
+                real_sum[pair][typeof] = vol
+        try:
+            real_sum[pair]['balance'] += calc
+        except:
+            real_sum[pair]['balance'] = calc
+
     return real_sum
 
 def get_balance(query):
@@ -133,18 +155,20 @@ def analysis(tick):
         temp = (- avg + float(last[0]))/ float(last[0]) * 100
         row['pct'] = int(temp * 1000) / 1000
         mydict.append(row)
-        #print("{0}\t{1}\t{2}\tε{3}{4} ".format(coin, last[0], avg, int(toteuro), sign))
-        #print_dict(row)
     return (mydict, ['coin', 'last', 'avg', 'toteuro', 'low', 'high', 'pct'])
 
 def recommend():
+    #Get ticker data
     query = {}
     res = run_func(ticker, query)
-    #print("Last price")
     tick = res['result']
     (mydict, row) = analysis(tick)
+
+    # Get Balance
     res = run_func(get_balance, query)
     balance = res['result']
+
+    # Find coins that could be potentially sold
     mylist = list()
     for item in mydict:
         coin = pair_to_coin(item['coin'])
@@ -154,29 +178,59 @@ def recommend():
                 mylist.append((i,pct))
     mylist.sort(key=lambda tup: tup[1])
 
+    # Get trade history data
     query = {'start':datetime.timestamp(datetime.now() - timedelta(days=int(10)))}
     res = run_func(tradehistory, query)
     trades = res['result']['trades']
+
+    # calculate net spent per coin
     fees = calculate_fees(trades)
-    spent = calculate_price(trades)
+    (vol, spent) = calculate_price(trades)
     total = {}
     for item in fees:
         total[item] = spent[item] - fees[item]
     potsell = {}
+    pricepercoin = {}
     for item in mydict:
         pair = item['coin']
         coin = pair_to_coin(pair)
         for x in balance:
             if coin == x:
-                potsell[pair] = float(balance[x]) * float(item['last'])
+                calc = float(balance[x]) * float(item['last']) 
+                if calc > 1:
+                    potsell[pair] = int(calc * 1000) / 1000
+                
+    # calculate difference in unit prices based on stats
     (mycoin, pct) = mylist[-1]
-    print("Most changed", mylist)
+    listdict = {}
+    for coin, pct in mylist:
+        listdict[coin] = pct
+    print_dict(listdict, ['coin', '% changed (last - avg) / last'])
+        
+    # calculate if selling of selected coins is profitable
     diff = {}
+    diffpercoin = {}
     for item in mydict:
         pair = item['coin']
         if (pair in potsell) and (pair in spent):
             diff[pair] = int((potsell[pair] + spent[pair]) * 1000) / 1000
-    print_dict(diff)
+            pricepercoin[pair] = int(spent[pair] / vol[pair] * 1000) / 1000
+            diffpercoin[pair] = int(-(pricepercoin[pair] - float(item['last'])) * 1000) / 1000
+    print_dict(pricepercoin,['coin', 'Unit Price Bought'])
+    print_dict(diffpercoin, ['coin','Difference from last price'])
+    print_dict(diff, ['coin','Diff in €'])
+    print_dict(potsell, ['coin','Sell price in € (based on last price)'])
+
+    # calculate potential total
+    aggr = {}
+    sum1 = 0
+    for item in potsell:
+        calc = potsell[item]
+        sum1+=calc
+    # account for some sell fees
+    key = str(int(sum1 * 1000)/1000)
+    aggr[key] = int((sum1 - 0.0026 * sum1) * 1000) / 1000
+    print_dict(aggr, ['Sub-total', 'Fees included'])
 
 
 def run_func(func, arg):
@@ -212,8 +266,8 @@ def printTable(myDict, colList=None):
         for item in myList: print(formatStr.format(*item))
 
 
-def print_dict(dicttoprint):
-        t = PrettyTable(['key', 'value'])
+def print_dict(dicttoprint, row=['key','value']):
+        t = PrettyTable(row)
         for key, val in dicttoprint.items():
             #if (isinstance(val, dict)):
             #    vallist = list()
@@ -256,8 +310,21 @@ def main(argv):
         print_dict(res['result'])
     elif args.open:
         query = { }
+        myownlist = list()
         res = run_func(open_orders, query)
-        print_dict(res['result']['open'])
+        #print_dict(res['result']['open'])
+        openord = res['result']['open']
+        for i in openord:
+            vol = openord[i]['vol']
+            item = openord[i]['descr']
+            del item['price2']
+            del item['leverage']
+            del item['order']
+            item['id'] = i
+            item['vol'] = int(float(vol) * 1000) / 1000
+            myownlist.append(openord[i]['descr'])
+        printTable(myownlist, ['id','type','ordertype','pair','price', 'vol'])
+
     elif args.place:
         query = eval(args.place)
         res = run_func(place_order, query)
@@ -286,10 +353,12 @@ def main(argv):
             row['coin'] = a
             row['buy'] = 0
             row['sell'] = 0
+            row['balance'] = 0
+            #import pdb;pdb.set_trace()
             for c,d in b.items():
                 row[c] = d
             myList.append(row)
-        printTable(myList,['coin','buy','sell'])
+        printTable(myList,['coin','buy','sell', 'balance'])
     elif args.rec:
         recommend()
 
