@@ -227,10 +227,15 @@ def recommend():
     for item in potsell:
         calc = potsell[item]
         sum1+=calc
-    # account for some sell fees
+    # account for fees
     key = str(int(sum1 * 1000)/1000)
     aggr[key] = int((sum1 - 0.0026 * sum1) * 1000) / 1000
     print_dict(aggr, ['Sub-total', 'Fees included'])
+
+    total = {}
+    # add current EUR balance
+    total['total'] = int((float(balance['ZEUR']) + aggr[key]) * 1000) / 1000
+    print_dict(total, ['', 'Provisional total in €'])
 
 
 def run_func(func, arg):
