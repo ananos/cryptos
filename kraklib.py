@@ -153,7 +153,7 @@ def analysis(tick):
         row['low'] = float(low[1])
         row['high'] = float(high[1])
         temp = (- avg + float(last[0]))/ float(last[0]) * 100
-        row['pct'] = int(temp * 1000) / 1000
+        row['pct'] = trunc(temp,3)
         mydict.append(row)
     return (mydict, ['coin', 'last', 'avg', 'toteuro', 'low', 'high', 'pct'])
 
@@ -198,7 +198,7 @@ def recommend():
             if coin == x:
                 calc = float(balance[x]) * float(item['last']) 
                 if calc > 1:
-                    potsell[pair] = int(calc * 1000) / 1000
+                    potsell[pair] = trunc(calc,3)
                 
     # calculate difference in unit prices based on stats
     (mycoin, pct) = mylist[-1]
@@ -213,9 +213,9 @@ def recommend():
     for item in mydict:
         pair = item['coin']
         if (pair in potsell) and (pair in spent):
-            diff[pair] = int((potsell[pair] + spent[pair]) * 1000) / 1000
-            pricepercoin[pair] = int(spent[pair] / vol[pair] * 1000) / 1000
-            diffpercoin[pair] = int(-(pricepercoin[pair] - float(item['last'])) * 1000) / 1000
+            diff[pair] = trunc(potsell[pair] + spent[pair], 3)
+            pricepercoin[pair] = trunc(spent[pair] / vol[pair],3)
+            diffpercoin[pair] = trunc(-(pricepercoin[pair] - float(item['last'])),3)
     print_dict(pricepercoin,['coin', 'Unit Price Bought'])
     print_dict(diffpercoin, ['coin','Difference from last price'])
     print_dict(diff, ['coin','Diff in €'])
@@ -228,13 +228,13 @@ def recommend():
         calc = potsell[item]
         sum1+=calc
     # account for fees
-    key = str(int(sum1 * 1000)/1000)
-    aggr[key] = int((sum1 - 0.0026 * sum1) * 1000) / 1000
+    key = str(trunc(sum1,3))
+    aggr[key] = trunc((sum1 - 0.0026 * sum1),3)
     print_dict(aggr, ['Sub-total', 'Fees included'])
 
     total = {}
     # add current EUR balance
-    total['total'] = int((float(balance['ZEUR']) + aggr[key]) * 1000) / 1000
+    total['total'] = trunc((float(balance['ZEUR']) + aggr[key]),3)
     print_dict(total, ['', 'Provisional total in €'])
 
 
@@ -284,6 +284,9 @@ def print_dict(dicttoprint, row=['key','value']):
         print(t)
 
 
+def trunc(string,dec_to_trunc=3):
+    return int(float(string) * 10**dec_to_trunc) / (10**dec_to_trunc)
+
 def main(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('-d','--dbfile', help='DataBase file',required=False)
@@ -326,7 +329,7 @@ def main(argv):
             del item['leverage']
             del item['order']
             item['id'] = i
-            item['vol'] = int(float(vol) * 1000) / 1000
+            item['vol'] = trunc(vol,3)
             myownlist.append(openord[i]['descr'])
         printTable(myownlist, ['id','type','ordertype','pair','price', 'vol'])
 
@@ -341,7 +344,33 @@ def main(argv):
     elif args.history:
         query = {'start':datetime.timestamp(datetime.now() - timedelta(days=int(args.history)))}
         res = run_func(tradehistory, query)
-        print_dict(res['result']['trades'])
+        myList=list()
+        myDict = {}
+        for a,b in res['result']['trades'].items():
+            row = {}
+            row['id'] = a
+            for c,d in b.items():
+                row[c] = d
+            del row['margin']
+            row['fee' ] = trunc(row['fee'], 5)
+            row['price'] = trunc(row['price'])
+            row['cost'] = trunc(row['cost'])
+            row['vol'] = float(row['vol'])
+            row['time'] = "{:%Y-%m-%d.%H:%M}".format(datetime.fromtimestamp(row['time']))
+            if row['ordertxid'] in myDict:
+                ptr = myDict[row['ordertxid']]
+                ptr['vol'] += row['vol']
+                ptr['cost'] += row['cost']
+                ptr['fee'] += row['fee']
+            else:
+                myDict[row['ordertxid']] = row
+        for it in myDict:
+            row = myDict[it]
+            row['id'] = it
+            myList.append(row)
+
+        printTable(myList, ['id', 'type', 'pair','price', 'vol', 'fee', 'time','ordertype'])
+        #print_dict(res['result']['trades'])
     elif args.fees:
         query = {}
         res = run_func(tradehistory, query)
