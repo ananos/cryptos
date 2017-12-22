@@ -179,7 +179,7 @@ def recommend():
     mylist.sort(key=lambda tup: tup[1])
 
     # Get trade history data
-    query = {'start':datetime.timestamp(datetime.now() - timedelta(days=int(10)))}
+    query = {'start':datetime.timestamp(datetime.now() - timedelta(days=int(20)))}
     res = run_func(tradehistory, query)
     trades = res['result']['trades']
 
@@ -335,7 +335,29 @@ def main(argv):
 
     elif args.place:
         query = eval(args.place)
-        res = run_func(place_order, query)
+        #res = run_func(place_order, query)
+        exit = 0
+        res = {}
+        while (1):
+            try:
+                res = place_order(query)
+                if res['error'] != []:
+                    break
+            except:
+                print("got an exception")
+                ores = run_func(open_orders, {})
+                oorders = ores['result']['open']
+                for item in oorders:
+                    row = oorders[item]['descr']
+                    if row['type'] == query['type'] and float(oorders[item]['vol']) == float(query['volume']) and float(row['price']) == float(query['price']):
+                        print("order already placed, will not continue, orderid: %s " % item)
+                        res['result'] = row
+                        exit = 1
+                        break
+                if exit == 0:
+                    print("will retry")
+                else:
+                    break
         print_dict(res['result'])
     elif args.balance:
         query = {}
