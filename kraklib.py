@@ -444,15 +444,15 @@ def main(argv):
             row['acquired'] = 0
             coin = pair_to_coin(a)
             if a in potsell:
-                row['potsell'] = potsell[a]
+                row['potsell'] = trunc(potsell[a])
             else:
                 row['potsell'] = 0
             if coin in balance:
-                row['balancevol'] = balance[coin]
+                row['balancevol'] = trunc(balance[coin])
             else:
                 row['balancevol'] = 0
             for c,d in b.items():
-                row[c] = d
+                row[c] = trunc(d)
             myList.append(row)
         #print_dict(real_sum)
         printTable(myList,['coin','buy','sell', 'spent', 'acquired', 'balance', 'balancevol', 'potsell'])
