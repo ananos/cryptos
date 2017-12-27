@@ -349,7 +349,9 @@ def main(argv):
             try:
                 res = place_order(query)
                 if res['error'] != []:
+                    print(res['error'])
                     break
+                break
             except:
                 print("got an exception")
                 ores = run_func(open_orders, {})
