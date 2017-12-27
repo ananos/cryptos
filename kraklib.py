@@ -86,6 +86,9 @@ def aggregate(trades):
         calc = price * vol
         if typeof == 'buy':
             calc = (-1) * calc
+            typeofe = 'spent'
+        else:
+            typeofe = 'acquired'
         try:
             real_sum[pair][typeof] += vol
         except:
@@ -98,6 +101,10 @@ def aggregate(trades):
             real_sum[pair]['balance'] += calc
         except:
             real_sum[pair]['balance'] = calc
+        try:
+            real_sum[pair][typeofe] += calc
+        except:
+            real_sum[pair][typeofe] = calc
 
     return real_sum
 
@@ -399,22 +406,55 @@ def main(argv):
         trades = res['result']['trades']
         print_dict(calculate_fees(trades))
     elif args.aggregate:
-        query = {}
-        res = run_func(tradehistory, query)
+        query1 = {}
+        res = run_func(tradehistory, query1)
         trades = res['result']['trades']
         myList = list()
-        real_sum =aggregate(trades)
+        real_sum = aggregate(trades)
+        query2 = {}
+        res2 = run_func(ticker, query2)
+        tick = res2['result']
+        (mydict, row) = analysis(tick)
+
+        query3 = {}
+        res3 = run_func(get_balance, query3)
+        balance = res3['result']
+
+        potsell = {}
+        #import pdb;pdb.set_trace()
+        for item in mydict:
+            pair = item['coin']
+            coin = pair_to_coin(pair)
+            for x in balance:
+                if coin == x:
+                    calc = float(balance[x]) * float(item['last']) 
+                    if calc > 1:
+                        potsell[pair] = trunc(calc,3)
+        print_dict(potsell)
         for a,b in real_sum.items():
             row = {}
             row['coin'] = a
             row['buy'] = 0
             row['sell'] = 0
+            row['balancevol'] = 0
             row['balance'] = 0
-            #import pdb;pdb.set_trace()
+            row['spent'] = 0
+            row['acquired'] = 0
+            coin = pair_to_coin(a)
+            if a in potsell:
+                row['potsell'] = potsell[a]
+            else:
+                row['potsell'] = 0
+            if coin in balance:
+                row['balancevol'] = balance[coin]
+            else:
+                row['balancevol'] = 0
             for c,d in b.items():
                 row[c] = d
             myList.append(row)
-        printTable(myList,['coin','buy','sell', 'balance'])
+        #print_dict(real_sum)
+        printTable(myList,['coin','buy','sell', 'spent', 'acquired', 'balance', 'balancevol', 'potsell'])
+        #printTable(myList)#,['coin','buy','sell', 'balance', 'spent', 'acquired'])
     elif args.rec:
         recommend()
 
