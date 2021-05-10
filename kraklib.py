@@ -130,7 +130,7 @@ def ticker(query):
     if not query:
         query = {'pair': 'XETHZEUR, XXBTZEUR, XREPZEUR,'
                           'BCHEUR, XZECZEUR, DASHEUR, XXRPZEUR, '
-                          'XXMRZEUR, XETCZEUR, XLTCZEUR'}
+                          'XXMRZEUR, XETCZEUR, XLTCZEUR, XREPXETH, XETCXETH, XETCXXBT, XREPXXBT,XETHXXBT, XXLMXXBT'}
     result = k.query_public('Ticker', query )
     return result
 
@@ -186,7 +186,7 @@ def recommend():
     mylist.sort(key=lambda tup: tup[1])
 
     # Get trade history data
-    query = {'start':datetime.timestamp(datetime.now() - timedelta(days=int(20)))}
+    query = {'start':datetime.timestamp(datetime.now() - timedelta(days=int(300)))}
     res = run_func(tradehistory, query)
     trades = res['result']['trades']
 
@@ -300,6 +300,7 @@ def main(argv):
     parser.add_argument('-s','--stats', help='Show stats',required=False,action='store_true')
     parser.add_argument('-c','--cancel', help='Cancel Order <txid>',required=False)
     parser.add_argument('-o','--open', help='Open Orders ',required=False, action='store_true')
+    parser.add_argument('-l','--long', help="Place a long standing order ex: -l { 'pair': 'XXRPZEUR', 'type': 'sell', 'ordertype': 'limit', 'price': '1.5', 'volume': '30', 'threshold': '1.4' } ",required=False)
     parser.add_argument('-p','--place', help="Place Order ex: -p { 'pair': 'XXRPZEUR', 'type': 'sell', 'ordertype': 'limit', 'price': '1.5', 'volume': '30' } ",required=False)
     parser.add_argument('-b','--balance', help='Place Order ',required=False, action='store_true')
     parser.add_argument('-t','--history', help='Trade History ex: -t 2 (show last 2 days)',required=False)
@@ -341,16 +342,20 @@ def main(argv):
         printTable(myownlist, ['id','type','ordertype','pair','price', 'vol'])
 
     elif args.place:
+
         query = eval(args.place)
         #res = run_func(place_order, query)
         exit = 0
         res = {}
-        while (1):
+        nrtimes = 10
+        while nrtimes != 0:
             try:
                 res = place_order(query)
                 if res['error'] != []:
                     print(res['error'])
-                    break
+                    nrtimes -= 1
+                    time.sleep(1)
+                    continue
                 break
             except:
                 print("got an exception")
@@ -368,6 +373,58 @@ def main(argv):
                 else:
                     break
         print_dict(res['result'])
+    elif args.long:
+        query = eval(args.long)
+        threshold = query['threshold']
+        del(query['threshold'])
+        query2 = {'pair': query['pair']}
+        while True:
+            res = run_func(ticker, query2)
+            tick = res['result']
+            (mydict, row) = analysis(tick)
+            dic = mydict[0]
+            if query['type'] == 'sell':
+                clause = (dic['last'] > threshold)
+            else:
+                clause = (dic['last'] < threshold)
+            if clause:
+                print("will place order")
+                print(threshold + " " + dic['last'])
+                #res = run_func(place_order, query)
+                exit = 0
+                res = {}
+                nrtimes = 10
+                while nrtimes != 0:
+                    try:
+                        res = place_order(query)
+                        if res['error'] != []:
+                            print(res['error'])
+                            nrtimes -= 1
+                            time.sleep(1)
+                            continue
+                        break
+                    except:
+                        print("got an exception")
+                        ores = run_func(open_orders, {})
+                        oorders = ores['result']['open']
+                        for item in oorders:
+                            row = oorders[item]['descr']
+                            if row['type'] == query['type'] and float(oorders[item]['vol']) == float(query['volume']) and float(row['price']) == float(query['price']):
+                                print("order already placed, will not continue, orderid: %s " % item)
+                                res['result'] = row
+                                exit = 1
+                                break
+                        if exit == 0:
+                            print("will retry")
+                        else:
+                            break
+                print_dict(res['result'])
+                break
+            else:
+                print(threshold + " " + dic['last'])
+                print("will not place order")
+            time.sleep(60)
+        print(mydict)
     elif args.balance:
         query = {}
         res = run_func(get_balance, query)
@@ -408,7 +465,7 @@ def main(argv):
         trades = res['result']['trades']
         print_dict(calculate_fees(trades))
     elif args.aggregate:
-        query1 = {}
+        query1 = {'start':datetime.timestamp(datetime.now() - timedelta(days=int(900)))}
         res = run_func(tradehistory, query1)
         trades = res['result']['trades']
         myList = list()

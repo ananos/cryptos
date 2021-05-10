@@ -1,6 +1,6 @@
 ================
 
-Cryptos is a work-in-progress repository for software to manipulate 
+Cryptos is a work-in-progress repository for software to handle
 crypto trading. 
 
 Currently, the only supported platform is KRAKEN.
@@ -71,8 +71,8 @@ XETCZEUR | 28.41200000  | 29.4095  | 794k    | 27.91   | 30.909  | -3.51
 (krakenlib) # ./kraklib.py -o
 id                  | type | ordertype | pair   | price   | vol
 ------------------- | ---- | --------- | ------ | ------- | ----
-O653D6-YWHWW-WGBEE3 | sell | limit     | XRPEUR | 1.50000 | 30.0
-OC2HYE-QVQU3-RJJ5N5 | sell | limit     | XRPEUR | 1.80000 | 40.0
+O653D6-YWHWW-WGBEE3 | sell | limit     | XRPEUR | 1.50000 | 3.0
+OC2HYE-QVQU3-RJJ5N5 | sell | limit     | XRPEUR | 1.80000 | 4.0
 
 - Cancel open orders:
 
@@ -108,7 +108,7 @@ The tuple list represents which coins have changed most (percentage) and the tab
 +----------+-------------------+
 |   coin   | Unit Price Bought |
 +----------+-------------------+
-| XETCZEUR |        29.0       |
+| XETCZEUR |        9.0       |
 | XXRPZEUR |       0.406       |
 +----------+-------------------+
 +----------+----------------------------+
@@ -121,17 +121,17 @@ The tuple list represents which coins have changed most (percentage) and the tab
 |   coin   | Diff in € |
 +----------+-----------+
 | XETCZEUR |    -9.0   |
-| XXRPZEUR |  655.513  |
+| XXRPZEUR |  5.513  |
 +----------+-----------+
 +----------+---------------------------------------+
 |   coin   | Sell price in € (based on last price) |
 +----------+---------------------------------------+
-|  BCHEUR  |                176.295                |
-| XETCZEUR |                 1296.0                |
-| XXRPZEUR |                1860.211               |
+|  BCHEUR  |                6.295                |
+| XETCZEUR |                 6.0                |
+| XXRPZEUR |                1.211               |
 +----------+---------------------------------------+
 +-----------+---------------+
 | Sub-total | Fees included |
 +-----------+---------------+
-|  3332.506 |    3323.841   |
+|  2.506 |    3.841   |
 +-----------+---------------+
